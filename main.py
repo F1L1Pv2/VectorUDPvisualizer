@@ -89,22 +89,6 @@ def handle_message(msg, ax):
 
         deviceId = int(deviceId)
 
-        forward = np.array([0, 0, 1])
-        
-        up = np.array([0, 1, 0])
-        
-        right = np.array([1, 0, 0])
-
-
-        
-        # Define the transformation matrix from the Android coordinate system to the new coordinate system
-        
-        transform_matrix = np.eye(4)
-        
-        transform_matrix[:3,:3] = np.column_stack((right, up, -forward))
-
-
-        
         # Obtain the quaternion from your Android application
         
         quaternion = np.array([qw, qx, qy, qz])
@@ -144,6 +128,13 @@ def receive_messages():
         msg, _ = server_socket.recvfrom(1024)
         msg = msg.decode()
         handle_message(msg, ax)
+        
+forward = np.array([0, 0, 1])
+up = np.array([0, 1, 0])
+right = np.array([1, 0, 0])
+# Define the transformation matrix from the Android coordinate system to the new coordinate system
+transform_matrix = np.eye(4)
+transform_matrix[:3,:3] = np.column_stack((right, up, -forward))
 
 # Create a figure
 fig = plt.figure()
