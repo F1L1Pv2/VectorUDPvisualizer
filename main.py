@@ -27,21 +27,13 @@ def visualize_vectors(frames):
 
 vectors ={}
 
-def rotate_quaternion_by_quaternion(q, r):
-    """
-    Rotates quaternion q by quaternion r using quaternion multiplication
-    """
-    # quaternion multiplication formula: q * r = (w1w2 - x1x2 - y1y2 - z1z2, 
-    #                                             w1x2 + x1w2 + y1z2 - z1y2, 
-    #                                             w1y2 - x1z2 + y1w2 + z1x2, 
-    #                                             w1z2 + x1y2 - y1x2 + z1w2)
-    w1, x1, y1, z1 = q
-    w2, x2, y2, z2 = r
-    return (w1*w2 - x1*x2 - y1*y2 - z1*z2,
-            w1*x2 + x1*w2 + y1*z2 - z1*y2,
-            w1*y2 - x1*z2 + y1*w2 + z1*x2,
-            w1*z2 + x1*y2 - y1*x2 + z1*w2)
-
+def multiply(q1,q2):
+    w1, x1, y1, z1 = q1
+    w2, x2, y2, z2 = q2
+    return np.array([-x1 * x2 - y1 * y2 - z1 * z2 + w1 * w2,
+                    x1 * w2 + y1 * z2 - z1 * y2 + w1 * x2,
+                    -x1 * z2 + y1 * w2 + z1 * x2 + w1 * y2,
+                    x1 * y2 - y1 * x2 + z1 * w2 + w1 * z2], dtype=np.float64)
 
 # Define the function to handle incoming messages
 def handle_message(msg, ax):
@@ -50,10 +42,16 @@ def handle_message(msg, ax):
         deviceId, q0, q1, q2, q3 = map(float, msg.split(','))
         q = np.array([q0, q1, q2, q3])
 
-        qx = q1
-        qy = q2
-        qz = q3
-        qw = q0
+        # q2=[0.71,0.71,0,0]
+
+        #multiply quaternion by quaternion
+
+        # q=multiply(q,q2)
+
+        qx = q[1]
+        qy = q[2]
+        qz = q[3]
+        qw = q[0]
 
         deviceId = int(deviceId)
 
