@@ -89,6 +89,37 @@ def handle_message(msg, ax):
 
         deviceId = int(deviceId)
 
+        forward = np.array([0, 0, 1])
+        
+        up = np.array([0, 1, 0])
+        
+        right = np.array([1, 0, 0])
+
+
+        
+        # Define the transformation matrix from the Android coordinate system to the new coordinate system
+        
+        transform_matrix = np.eye(4)
+        
+        transform_matrix[:3,:3] = np.column_stack((right, up, -forward))
+
+
+        
+        # Obtain the quaternion from your Android application
+        
+        quaternion = np.array([qw, qx, qy, qz])
+
+
+        
+        # Convert the quaternion from the Android coordinate system to the new coordinate system
+        
+        result_quaternion = np.dot(transform_matrix, quaternion)
+
+        qw = result_quaternion[0]
+        qx = result_quaternion[1]
+        qy = result_quaternion[2]
+        qz = result_quaternion[3]
+
         v = 2 * (qx*qz - qw*qy), 2 * (qy*qz + qw*qx), 1 - 2 * (qx*qx + qy*qy)
         
         
