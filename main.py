@@ -48,6 +48,10 @@ def handle_message(msg, ax):
 
         # q=multiply(q,q2)
 
+        # q = np.array([0.71,0,0.71,0])
+
+        # q=multiply(q,q2)
+
         qx = q[1]
         qy = q[2]
         qz = q[3]
@@ -55,23 +59,8 @@ def handle_message(msg, ax):
 
         deviceId = int(deviceId)
 
-        #conver quaternion to euler angles
-        roll = np.arctan2(2 * (q[0] * q[1] + q[2] * q[3]), 1 - 2 * (q[1] * q[1] + q[2] * q[2]))
-        pitch = np.arcsin(2 * (q[0] * q[2] - q[3] * q[1]))
-        yaw = np.arctan2(2 * (q[0] * q[3] + q[1] * q[2]), 1 - 2 * (q[2] * q[2] + q[3] * q[3]))
-        
-        #print in degrees
-        # print("roll: ", roll * 180 / np.pi, "pitch: ", pitch * 180 / np.pi, "yaw: ", yaw * 180 / np.pi)
-
-        # convert the quaternion to a vector
-
-
-        #rotate quaternion by 90 degrees around x axis
-
-        # v = np.array([0, 2 * (q[1] * q[3] - q[0] * q[2]), 2 * (q[0] * q[1] + q[2] * q[3]), 2 * (0.5 - q[1] * q[1] - q[2] * q[2])])
-
         v = 2 * (qx*qz - qw*qy), 2 * (qy*qz + qw*qx), 1 - 2 * (qx*qx + qy*qy)
-
+        
         
 
         # check if the vector is already in the list
