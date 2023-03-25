@@ -3,9 +3,37 @@ import socket
 import threading
 import numpy as np
 import matplotlib.pyplot as plt
+from math import cos, sin
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as animation
 import random
+
+def angleAxisQuat(axis, angle):
+    if axis == "x":
+        q = (
+            cos(angle / 2.),
+            sin(angle / 2.),
+            0,
+            0
+        )
+    elif axis == "y":
+        q = (
+            cos(angle / 2.),
+            0,
+            sin(angle / 2.),
+            0
+        )
+    elif axis == "z":
+        q = (
+            cos(angle / 2.),
+            0,
+            0,
+            sin(angle / 2.)
+        )
+    else:
+        raise ValueError("Invalid axis")
+
+    return q
 
 # Define the function to visualize a vector
 def visualize_vectors(frames):
@@ -51,6 +79,8 @@ def handle_message(msg, ax):
         # q = np.array([0.71,0,0.71,0])
 
         # q=multiply(q,q2)
+        nQ = np.array(angleAxisQuat("x", 1.570796))
+        q = multiply(q, nQ)
 
         qx = q[1]
         qy = q[2]
