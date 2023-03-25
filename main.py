@@ -1,3 +1,4 @@
+import math
 import socket
 import threading
 import numpy as np
@@ -11,7 +12,6 @@ def visualize_vectors(frames):
     global ax
     global vectors
     ax.clear()
-    # print(vectors)
     ax.set_xlim([-1.5, 1.5])
     ax.set_ylim([-1.5, 1.5])
     ax.set_zlim([-1.5, 1.5])
@@ -19,48 +19,70 @@ def visualize_vectors(frames):
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     ax.set_title('Orientation Vectors')
-    # for v in vectors:
-    #     ax.quiver(0, 0, 0, v[0], v[1], v[2], color='r')
+
     for v in vectors.values():
-
-        #find v in vectors
-
-        # id = list(vectors.keys())[list(vectors.values()).index(v)]
-        # print(id)
-
-        # #set seed of random number generator to id
-        # random.seed(id)
 
         color = (random.random(), random.random(), random.random())
         ax.quiver(0, 0, 0, v[0], v[1], v[2], color=color)
 
-
 vectors ={}
+
+def rotate_quaternion_by_quaternion(q, r):
+    """
+    Rotates quaternion q by quaternion r using quaternion multiplication
+    """
+    # quaternion multiplication formula: q * r = (w1w2 - x1x2 - y1y2 - z1z2, 
+    #                                             w1x2 + x1w2 + y1z2 - z1y2, 
+    #                                             w1y2 - x1z2 + y1w2 + z1x2, 
+    #                                             w1z2 + x1y2 - y1x2 + z1w2)
+    w1, x1, y1, z1 = q
+    w2, x2, y2, z2 = r
+    return (w1*w2 - x1*x2 - y1*y2 - z1*z2,
+            w1*x2 + x1*w2 + y1*z2 - z1*y2,
+            w1*y2 - x1*z2 + y1*w2 + z1*x2,
+            w1*z2 + x1*y2 - y1*x2 + z1*w2)
+
 
 # Define the function to handle incoming messages
 def handle_message(msg, ax):
+    global vectors
     try:
-        deviceId, azimuth, pitch, roll = map(float, msg.split(','))
-        azimuth = np.radians(azimuth)
-        pitch = np.radians(pitch)
-        roll = np.radians(roll)
-        R_az = np.array([[np.cos(azimuth), -np.sin(azimuth), 0], [np.sin(azimuth), np.cos(azimuth), 0], [0, 0, 1]])
-        R_p = np.array([[np.cos(pitch), 0, np.sin(pitch)], [0, 1, 0], [-np.sin(pitch), 0, np.cos(pitch)]])
-        R_r = np.array([[1, 0, 0], [0, np.cos(roll), -np.sin(roll)], [0, np.sin(roll), np.cos(roll)]])
-        R = R_az.dot(R_p).dot(R_r)
-        v = R.dot(np.array([1, 0, 0]))
-        
+        deviceId, q0, q1, q2, q3 = map(float, msg.split(','))
+        q = np.array([q0, q1, q2, q3])
+
+        qx = q1
+        qy = q2
+        qz = q3
+        qw = q0
+
         deviceId = int(deviceId)
 
-        #check if the vector is already in the list
+        #conver quaternion to euler angles
+        roll = np.arctan2(2 * (q[0] * q[1] + q[2] * q[3]), 1 - 2 * (q[1] * q[1] + q[2] * q[2]))
+        pitch = np.arcsin(2 * (q[0] * q[2] - q[3] * q[1]))
+        yaw = np.arctan2(2 * (q[0] * q[3] + q[1] * q[2]), 1 - 2 * (q[2] * q[2] + q[3] * q[3]))
+        
+        #print in degrees
+        # print("roll: ", roll * 180 / np.pi, "pitch: ", pitch * 180 / np.pi, "yaw: ", yaw * 180 / np.pi)
+
+        # convert the quaternion to a vector
+
+
+        #rotate quaternion by 90 degrees around x axis
+
+        # v = np.array([0, 2 * (q[1] * q[3] - q[0] * q[2]), 2 * (q[0] * q[1] + q[2] * q[3]), 2 * (0.5 - q[1] * q[1] - q[2] * q[2])])
+
+        v = 2 * (qx*qz - qw*qy), 2 * (qy*qz + qw*qx), 1 - 2 * (qx*qx + qy*qy)
+
+        
+
+        # check if the vector is already in the list
         vectors[deviceId] = v
-        
-
-        
-        # visualize_vectors(ax, vectors)
-
     except ValueError:
         pass
+
+
+
 
 # Define the function to receive messages
 def receive_messages():
@@ -73,8 +95,6 @@ def receive_messages():
     while True:
         msg, _ = server_socket.recvfrom(1024)
         msg = msg.decode()
-        # Call the message handling function
-        # print(msg)
         handle_message(msg, ax)
 
 # Create a figure
